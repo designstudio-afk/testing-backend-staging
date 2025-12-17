@@ -1,0 +1,51 @@
+{
+  "name": "express-api-backend",
+  "version": "1.0.0",
+  "description": "Express.js CRUD API with PostgreSQL and ImageKit",
+  "keywords": [
+    "express",
+    "postgresql",
+    "imagekit",
+    "api",
+    "crud"
+  ],
+  "license": "MIT",
+  "author": "",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "3.0.3",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "cors": "2.8.5",
+    "dotenv": "17.2.3",
+    "express": "5.2.1",
+    "helmet": "8.1.0",
+    "imagekit": "6.0.0",
+    "jsonwebtoken": "9.0.3",
+    "lucide-react": "0.561.0",
+    "multer": "2.0.2",
+    "next": "16.0.10",
+    "pg": "8.16.3",
+    "pg-native": "latest",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tailwind-merge": "3.4.0",
+    "tailwindcss-animate": "1.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "25.0.3",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "postcss": "8.5.6",
+    "tailwindcss": "4.1.18",
+    "typescript": "5.9.3"
+  },
+  "trustedDependencies": [
+    "pg-native"
+  ]
+}
