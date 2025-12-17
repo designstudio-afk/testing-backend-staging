@@ -4,21 +4,10 @@ export const getAllNewsCategories = async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT 
-        nc.id,
-        nc.category_name,
-        COALESCE(json_agg(
-          json_build_object(
-            'id', n.id,
-            'title', n.title,
-            'images', n.images,
-            'date', n.date,
-            'link', n.link
-          ) ORDER BY n.date DESC
-        ) FILTER (WHERE n.id IS NOT NULL), '[]'::json) as news
-      FROM news_category nc
-      LEFT JOIN news n ON nc.id = n.category_id
-      GROUP BY nc.id, nc.category_name
-      ORDER BY nc.category_name ASC`,
+        id,
+        category_name
+      FROM news_category
+      ORDER BY category_name ASC`,
     )
 
     res.json({
