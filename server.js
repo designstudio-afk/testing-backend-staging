@@ -2,12 +2,12 @@ import express from "express"
 import cors from "cors"
 import helmet from "helmet"
 import dotenv from "dotenv"
-import categoryRoutes from "./routes/category.routes.js"
-import projectRoutes from "./routes/project.routes.js"
-import newsCategoryRoutes from "./routes/newsCategory.routes.js"
-import newsRoutes from "./routes/news.routes.js"
-import authRoutes from "./routes/auth.routes.js"
-import { errorHandler } from "./middleware/errorHandler.js"
+import categoryRoutes from "./src/routes/category.routes.js"
+import projectRoutes from "./src/routes/project.routes.js"
+import newsCategoryRoutes from "./src/routes/newsCategory.routes.js"
+import newsRoutes from "./src/routes/news.routes.js"
+import authRoutes from "./src/routes/auth.routes.js"
+import { errorHandler } from "./src/middleware/errorHandler.js"
 
 dotenv.config()
 
