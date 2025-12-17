@@ -6,7 +6,7 @@ export const getAllNewsCategories = async (req, res, next) => {
       `SELECT 
         id,
         category_name
-      FROM news_categoryuse
+      FROM news_category
       ORDER BY category_name ASC`,
     )
 
