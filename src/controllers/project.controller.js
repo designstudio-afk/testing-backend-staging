@@ -69,16 +69,56 @@ export const getProjectById = async (req, res, next) => {
   }
 }
 
+// export const getProjectBySlug = async (req, res, next) => {
+//   try {
+//     const { slug } = req.params
+
+//     const result = await pool.query(
+//       `
+//       SELECT p.*, c.category_name 
+//       FROM projects p 
+//       LEFT JOIN category c ON p.category_id = c.id 
+//       WHERE p.slug = $1
+//     `,
+//       [slug],
+//     )
+
+//     if (result.rows.length === 0) {
+//       return res.status(404).json({ error: "Project not found" })
+//     }
+
+//     res.json({
+//       success: true,
+//       data: result.rows[0],
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export const getProjectBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params
 
     const result = await pool.query(
       `
-      SELECT p.*, c.category_name 
-      FROM projects p 
-      LEFT JOIN category c ON p.category_id = c.id 
-      WHERE p.slug = $1
+      WITH current_project AS (
+        SELECT p.*, c.category_name, 
+               ROW_NUMBER() OVER (ORDER BY p.created_at DESC) as row_num
+        FROM projects p 
+        LEFT JOIN category c ON p.category_id = c.id 
+        WHERE p.slug = $1
+      ),
+      adjacent_projects AS (
+        SELECT p.slug, 
+               ROW_NUMBER() OVER (ORDER BY p.created_at DESC) as row_num
+        FROM projects p
+      )
+      SELECT 
+        cp.*,
+        (SELECT slug FROM adjacent_projects WHERE row_num = cp.row_num - 1 LIMIT 1) as previous_slug,
+        (SELECT slug FROM adjacent_projects WHERE row_num = cp.row_num + 1 LIMIT 1) as next_slug
+      FROM current_project cp
     `,
       [slug],
     )
