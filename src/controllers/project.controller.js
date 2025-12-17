@@ -4,16 +4,38 @@ import { generateSlug } from "../utils/slugify.js"
 
 export const getAllProjects = async (req, res, next) => {
   try {
-    const result = await pool.query(`
+    const page = Math.max(1, Number.parseInt(req.query.page) || 1)
+    const limit = Number.parseInt(req.query.limit) || 6
+    const offset = (page - 1) * limit
+
+    // Get total count
+    const countResult = await pool.query("SELECT COUNT(*) FROM projects")
+    const total = Number.parseInt(countResult.rows[0].count)
+    const totalPages = Math.ceil(total / limit)
+
+    // Get paginated results
+    const result = await pool.query(
+      `
       SELECT p.*, c.category_name 
       FROM projects p 
       LEFT JOIN category c ON p.category_id = c.id 
       ORDER BY p.created_at DESC
-    `)
+      LIMIT $1 OFFSET $2
+    `,
+      [limit, offset],
+    )
 
     res.json({
       success: true,
       data: result.rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     })
   } catch (error) {
     next(error)
@@ -109,7 +131,7 @@ export const createProject = async (req, res, next) => {
     const result = await pool.query(
       `INSERT INTO projects (
         id, category_id, cover, slug, title, layout, location_date, 
-        architect, type, size, status, desc, 
+        architect, type, size, status, "desc", 
         images1, images2, images3, images4, images5,
         images6, images7, images8, images9, images10
       ) VALUES (
@@ -213,7 +235,7 @@ export const updateProject = async (req, res, next) => {
         type = COALESCE($8, type),
         size = COALESCE($9, size),
         status = COALESCE($10, status),
-        desc = COALESCE($11, desc),
+        "desc" = COALESCE($11, "desc"),
         images1 = COALESCE($12, images1),
         images2 = COALESCE($13, images2),
         images3 = COALESCE($14, images3),

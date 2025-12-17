@@ -1,12 +1,46 @@
 import pool from "../config/database.js"
 
+// export const getAllCategories = async (req, res, next) => {
+//   try {
+//     const result = await pool.query("SELECT * FROM category ORDER BY category_name ASC")
+
+//     res.json({
+//       success: true,
+//       data: result.rows,
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export const getAllCategories = async (req, res, next) => {
   try {
-    const result = await pool.query("SELECT * FROM category ORDER BY category_name ASC")
+    const result = await pool.query(`
+      SELECT 
+        c.id,
+        c.category_name,
+        c.created_at,
+        c.updated_at,
+        json_agg(
+          json_build_object(
+            'id', p.id,
+            'title', p.title,
+            'slug', p.slug,
+            'cover', p.cover
+          ) ORDER BY p.created_at DESC
+        ) FILTER (WHERE p.id IS NOT NULL) as projects
+      FROM category c
+      LEFT JOIN projects p ON c.id = p.category_id
+      GROUP BY c.id, c.category_name, c.created_at, c.updated_at
+      ORDER BY c.category_name ASC
+    `)
 
     res.json({
       success: true,
-      data: result.rows,
+      data: result.rows.map((row) => ({
+        ...row,
+        projects: row.projects || [],
+      })),
     })
   } catch (error) {
     next(error)

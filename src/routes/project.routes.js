@@ -1,5 +1,5 @@
 import express from "express"
-import { verifyStaticToken, verifyAuthToken } from "../middleware/auth.js"
+import { verifyGetToken, verifyAuthToken } from "../middleware/auth.js"
 import { upload } from "../middleware/upload.js"
 import {
   getAllProjects,
@@ -12,12 +12,12 @@ import {
 
 const router = express.Router()
 
-// GET routes - require static token
-router.get("/", verifyStaticToken, getAllProjects)
-router.get("/id/:id", verifyStaticToken, getProjectById)
-router.get("/slug/:slug", verifyStaticToken, getProjectBySlug)
+// GET routes - require static token or JWT token
+router.get("/", verifyGetToken, getAllProjects)
+router.get("/id/:id", verifyGetToken, getProjectById)
+router.get("/slug/:slug", verifyGetToken, getProjectBySlug)
 
-// CUD routes - require auth token
+// Using fields with maxCount to accept multiple file and text fields
 router.post(
   "/",
   verifyAuthToken,
@@ -33,6 +33,16 @@ router.post(
     { name: "images8", maxCount: 1 },
     { name: "images9", maxCount: 1 },
     { name: "images10", maxCount: 1 },
+    // Add text fields to multer's acceptable fields
+    { name: "category_id" },
+    { name: "title" },
+    { name: "layout" },
+    { name: "location_date" },
+    { name: "architect" },
+    { name: "type" },
+    { name: "size" },
+    { name: "status" },
+    { name: "desc" },
   ]),
   createProject,
 )
@@ -52,6 +62,16 @@ router.put(
     { name: "images8", maxCount: 1 },
     { name: "images9", maxCount: 1 },
     { name: "images10", maxCount: 1 },
+    // Add text fields to multer's acceptable fields
+    { name: "category_id" },
+    { name: "title" },
+    { name: "layout" },
+    { name: "location_date" },
+    { name: "architect" },
+    { name: "type" },
+    { name: "size" },
+    { name: "status" },
+    { name: "desc" },
   ]),
   updateProject,
 )

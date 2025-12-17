@@ -1,18 +1,58 @@
 import pool from "../config/database.js"
 import { uploadImage } from "../utils/imageUpload.js"
 
+// export const getAllNews = async (req, res, next) => {
+//   try {
+//     const result = await pool.query(`
+//       SELECT n.*, nc.category_name 
+//       FROM news n 
+//       LEFT JOIN news_category nc ON n.category_id = nc.id 
+//       ORDER BY n.date DESC
+//     `)
+
+//     res.json({
+//       success: true,
+//       data: result.rows,
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
+
 export const getAllNews = async (req, res, next) => {
   try {
-    const result = await pool.query(`
+    const page = Math.max(1, Number.parseInt(req.query.page) || 1)
+    const limit = Math.max(1, Number.parseInt(req.query.limit) || 6)
+    const offset = (page - 1) * limit
+
+    // Get total count
+    const countResult = await pool.query(`SELECT COUNT(*) FROM news`)
+    const total = Number.parseInt(countResult.rows[0].count)
+    const totalPages = Math.ceil(total / limit)
+
+    const result = await pool.query(
+      `
       SELECT n.*, nc.category_name 
       FROM news n 
       LEFT JOIN news_category nc ON n.category_id = nc.id 
       ORDER BY n.date DESC
-    `)
+      LIMIT $1 OFFSET $2
+    `,
+      [limit, offset],
+    )
 
     res.json({
       success: true,
       data: result.rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     })
   } catch (error) {
     next(error)

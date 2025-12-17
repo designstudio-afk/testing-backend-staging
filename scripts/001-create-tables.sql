@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS projects (
     type VARCHAR(255),
     size VARCHAR(255),
     status VARCHAR(255),
-    desc TEXT,
+    'desc' TEXT,
     images1 TEXT,
     images2 TEXT,
     images3 TEXT,

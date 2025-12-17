@@ -1,5 +1,5 @@
 import express from "express"
-import { verifyStaticToken, verifyAuthToken } from "../middleware/auth.js"
+import { verifyGetToken, verifyAuthToken } from "../middleware/auth.js"
 import {
   getAllNewsCategories,
   getNewsCategoryById,
@@ -11,8 +11,8 @@ import {
 const router = express.Router()
 
 // GET routes - require static token
-router.get("/", verifyStaticToken, getAllNewsCategories)
-router.get("/:id", verifyStaticToken, getNewsCategoryById)
+router.get("/", verifyGetToken, getAllNewsCategories)
+router.get("/:id", verifyGetToken, getNewsCategoryById)
 
 // CUD routes - require auth token
 router.post("/", verifyAuthToken, createNewsCategory)
