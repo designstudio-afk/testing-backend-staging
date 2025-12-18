@@ -47,9 +47,39 @@ export const getAllCategories = async (req, res, next) => {
 //   }
 // }
 
+// export const getCategoryById = async (req, res, next) => {
+//   try {
+//     const { id } = req.params
+
+//     const categoryResult = await pool.query("SELECT * FROM category WHERE id = $1", [id])
+
+//     if (categoryResult.rows.length === 0) {
+//       return res.status(404).json({ error: "Category not found" })
+//     }
+
+//     // Get all projects related to this category
+//     const projectsResult = await pool.query("SELECT * FROM projects WHERE category_id = $1 ORDER BY created_at DESC", [
+//       id,
+//     ])
+
+//     res.json({
+//       success: true,
+//       data: {
+//         ...categoryResult.rows[0],
+//         projects: projectsResult.rows,
+//       },
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export const getCategoryById = async (req, res, next) => {
   try {
     const { id } = req.params
+    const page = Number.parseInt(req.query.page, 10) || 1
+    const limit = Number.parseInt(req.query.limit, 10) || 6
+    const offset = (page - 1) * limit
 
     const categoryResult = await pool.query("SELECT * FROM category WHERE id = $1", [id])
 
@@ -57,16 +87,28 @@ export const getCategoryById = async (req, res, next) => {
       return res.status(404).json({ error: "Category not found" })
     }
 
-    // Get all projects related to this category
-    const projectsResult = await pool.query("SELECT * FROM projects WHERE category_id = $1 ORDER BY created_at DESC", [
-      id,
-    ])
+    const projectsResult = await pool.query(
+      "SELECT * FROM projects WHERE category_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+      [id, limit, offset],
+    )
+
+    const totalResult = await pool.query("SELECT COUNT(*) FROM projects WHERE category_id = $1", [id])
+    const total = Number.parseInt(totalResult.rows[0].count, 10)
+    const totalPages = Math.ceil(total / limit)
 
     res.json({
       success: true,
       data: {
         ...categoryResult.rows[0],
         projects: projectsResult.rows,
+      },
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
       },
     })
   } catch (error) {
