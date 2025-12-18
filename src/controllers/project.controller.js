@@ -96,29 +96,72 @@ export const getProjectById = async (req, res, next) => {
 //   }
 // }
 
+// export const getProjectBySlug = async (req, res, next) => {
+//   try {
+//     const { slug } = req.params
+
+//     const result = await pool.query(
+//       `
+//       WITH current_project AS (
+//         SELECT p.*, c.category_name, 
+//                ROW_NUMBER() OVER (ORDER BY p.created_at DESC) as row_num
+//         FROM projects p 
+//         LEFT JOIN category c ON p.category_id = c.id 
+//         WHERE p.slug = $1
+//       ),
+//       adjacent_projects AS (
+//         SELECT p.slug, 
+//                ROW_NUMBER() OVER (ORDER BY p.created_at DESC) as row_num
+//         FROM projects p
+//       )
+//       SELECT 
+//         cp.*,
+//         (SELECT slug FROM adjacent_projects WHERE row_num = cp.row_num - 1 LIMIT 1) as previous_slug,
+//         (SELECT slug FROM adjacent_projects WHERE row_num = cp.row_num + 1 LIMIT 1) as next_slug
+//       FROM current_project cp
+//     `,
+//       [slug],
+//     )
+
+//     if (result.rows.length === 0) {
+//       return res.status(404).json({ error: "Project not found" })
+//     }
+
+//     res.json({
+//       success: true,
+//       data: result.rows[0],
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export const getProjectBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params
 
     const result = await pool.query(
       `
-      WITH current_project AS (
-        SELECT p.*, c.category_name, 
+      WITH ranked_projects AS (
+        SELECT p.id, p.slug, p.title, p.category_id, p.cover, p.layout, 
+               p.location_date, p.architect, p.type, p.size, p.status, p."desc",
+               p.images1, p.images2, p.images3, p.images4, p.images5,
+               p.images6, p.images7, p.images8, p.images9, p.images10,
+               p.created_at, p.updated_at, c.category_name,
                ROW_NUMBER() OVER (ORDER BY p.created_at DESC) as row_num
         FROM projects p 
-        LEFT JOIN category c ON p.category_id = c.id 
-        WHERE p.slug = $1
-      ),
-      adjacent_projects AS (
-        SELECT p.slug, 
-               ROW_NUMBER() OVER (ORDER BY p.created_at DESC) as row_num
-        FROM projects p
+        LEFT JOIN category c ON p.category_id = c.id
       )
       SELECT 
-        cp.*,
-        (SELECT slug FROM adjacent_projects WHERE row_num = cp.row_num - 1 LIMIT 1) as previous_slug,
-        (SELECT slug FROM adjacent_projects WHERE row_num = cp.row_num + 1 LIMIT 1) as next_slug
-      FROM current_project cp
+        rp.id, rp.slug, rp.title, rp.category_id, rp.category_name, rp.cover, rp.layout,
+        rp.location_date, rp.architect, rp.type, rp.size, rp.status, rp."desc",
+        rp.images1, rp.images2, rp.images3, rp.images4, rp.images5,
+        rp.images6, rp.images7, rp.images8, rp.images9, rp.images10,
+        rp.created_at, rp.updated_at,
+        (SELECT json_build_object('slug', rp2.slug, 'title', rp2.title) FROM ranked_projects rp2 WHERE rp2.row_num = rp.row_num - 1) as previous,
+        (SELECT json_build_object('slug', rp3.slug, 'title', rp3.title) FROM ranked_projects rp3 WHERE rp3.row_num = rp.row_num + 1) as next
+      FROM ranked_projects rp
+      WHERE rp.slug = $1
     `,
       [slug],
     )
@@ -135,6 +178,8 @@ export const getProjectBySlug = async (req, res, next) => {
     next(error)
   }
 }
+
+
 
 export const createProject = async (req, res, next) => {
   try {
