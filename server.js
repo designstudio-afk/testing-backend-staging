@@ -81,6 +81,7 @@ app.use("/api/news-categories", newsCategoryRoutes)
 app.use("/api/news", newsRoutes)
 app.use("/api/submissions", submissionRoutes)
 
+// Noted Check
 // Health check
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "API is running" })
