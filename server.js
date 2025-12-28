@@ -52,6 +52,7 @@ import projectRoutes from "./src/routes/project.routes.js"
 import newsCategoryRoutes from "./src/routes/newsCategory.routes.js"
 import newsRoutes from "./src/routes/news.routes.js"
 import authRoutes from "./src/routes/auth.routes.js"
+import submissionRoutes from "./src/routes/submission.routes.js"
 import { errorHandler } from "./src/middleware/errorHandler.js"
 
 dotenv.config()
@@ -78,6 +79,7 @@ app.use("/api/categories", categoryRoutes)
 app.use("/api/projects", projectRoutes)
 app.use("/api/news-categories", newsCategoryRoutes)
 app.use("/api/news", newsRoutes)
+app.use("/api/submissions", submissionRoutes)
 
 // Health check
 app.get("/health", (req, res) => {

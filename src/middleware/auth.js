@@ -47,3 +47,15 @@ export const verifyAuthToken = (req, res, next) => {
     return res.status(401).json({ error: "Unauthorized: Invalid token" })
   }
 }
+
+
+export const verifyFormSubmissionToken = (req, res, next) => {
+  const token = req.headers.authorization?.replace("Bearer ", "")
+  const formToken = process.env.FORM_SUBMISSION_TOKEN || process.env.JWT_SECRET
+
+  if (!token || token !== formToken) {
+    return res.status(403).json({ error: "Forbidden: Invalid form submission token" })
+  }
+
+  next()
+}
