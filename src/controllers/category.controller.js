@@ -88,7 +88,7 @@ export const getCategoryById = async (req, res, next) => {
     }
 
     const projectsResult = await pool.query(
-      "SELECT * FROM projects WHERE category_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+      "SELECT * FROM projects WHERE category_id = $1 ORDER BY updated_at DESC LIMIT $2 OFFSET $3",
       [id, limit, offset],
     )
 
