@@ -48,6 +48,7 @@ import cors from "cors"
 import helmet from "helmet"
 import dotenv from "dotenv"
 import categoryRoutes from "./src/routes/category.routes.js"
+import subCategoryRoutes from "./src/routes/subCategory.routes.js"
 import projectRoutes from "./src/routes/project.routes.js"
 import newsCategoryRoutes from "./src/routes/newsCategory.routes.js"
 import newsRoutes from "./src/routes/news.routes.js"
@@ -76,6 +77,7 @@ app.use(express.urlencoded({ extended: true }))
 // Routes
 app.use("/api/auth", authRoutes)
 app.use("/api/categories", categoryRoutes)
+app.use("/api/sub-categories", subCategoryRoutes)
 app.use("/api/projects", projectRoutes)
 app.use("/api/news-categories", newsCategoryRoutes)
 app.use("/api/news", newsRoutes)

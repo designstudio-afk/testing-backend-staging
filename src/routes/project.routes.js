@@ -8,6 +8,10 @@ import {
   createProject,
   updateProject,
   deleteProject,
+  addSubCategoriesToProject,
+  getProjectSubCategories,
+  removeSubCategoryFromProject,
+  getProjectsByFilter,
 } from "../controllers/project.controller.js"
 
 const router = express.Router()
@@ -77,5 +81,16 @@ router.put(
 )
 
 router.delete("/:id", verifyAuthToken, deleteProject)
+
+router.delete("/:id", verifyAuthToken, deleteProject)
+
+// Sub-category routes
+router.post("/:projectId/sub-categories", verifyAuthToken, addSubCategoriesToProject)
+router.get("/:projectId/sub-categories", verifyGetToken, getProjectSubCategories)
+router.delete("/:projectId/sub-categories/:subCategoryId", verifyAuthToken, removeSubCategoryFromProject)
+
+// Filter route
+router.get("/filter/by-category", verifyGetToken, getProjectsByFilter)
+
 
 export default router
