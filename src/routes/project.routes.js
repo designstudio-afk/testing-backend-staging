@@ -12,6 +12,7 @@ import {
   getProjectSubCategories,
   removeSubCategoryFromProject,
   getProjectsByFilter,
+  searchProjects,
 } from "../controllers/project.controller.js"
 
 const router = express.Router()
@@ -20,6 +21,7 @@ const router = express.Router()
 router.get("/", verifyGetToken, getAllProjects)
 router.get("/id/:id", verifyGetToken, getProjectById)
 router.get("/slug/:slug", verifyGetToken, getProjectBySlug)
+router.get("/search", verifyGetToken, searchProjects)
 
 // Using fields with maxCount to accept multiple file and text fields
 router.post(

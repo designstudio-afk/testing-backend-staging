@@ -833,3 +833,57 @@ export const getProjectsByFilter = async (req, res, next) => {
     next(error)
   }
 }
+
+
+export const searchProjects = async (req, res, next) => {
+  try {
+    const { q } = req.query
+    const page = Math.max(1, Number.parseInt(req.query.page) || 1)
+    const limit = Number.parseInt(req.query.limit) || 10
+    const offset = (page - 1) * limit
+
+    if (!q || q.trim().length === 0) {
+      return res.status(400).json({
+        error: "Search query is required",
+      })
+    }
+
+    const searchQuery = `%${q}%`
+
+    // Get total count
+    const countResult = await pool.query(
+      `SELECT COUNT(*) FROM projects 
+       WHERE title ILIKE $1 OR "desc" ILIKE $1 OR type ILIKE $1 OR architect ILIKE $1`,
+      [searchQuery],
+    )
+    const total = Number.parseInt(countResult.rows[0].count)
+    const totalPages = Math.ceil(total / limit)
+
+    // Get paginated results
+    const result = await pool.query(
+      `SELECT p.id, p.title, p.cover, p.type, p.slug, p.location_date, 
+              p.category_id, p.architect, p.created_at, c.category_name
+       FROM projects p 
+       LEFT JOIN category c ON p.category_id = c.id 
+       WHERE p.title ILIKE $1 OR p."desc" ILIKE $1 OR p.type ILIKE $1 OR p.architect ILIKE $1
+       ORDER BY p.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [searchQuery, limit, offset],
+    )
+
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    })
+  } catch (error) {
+    next(error)
+  }
+}
