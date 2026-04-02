@@ -49,6 +49,8 @@ router.post(
     { name: "size" },
     { name: "status" },
     { name: "desc" },
+    { name: "cat1"},
+    { name: "cat2"}
   ]),
   createProject,
 )
@@ -78,6 +80,8 @@ router.put(
     { name: "size" },
     { name: "status" },
     { name: "desc" },
+    { name: "cat1"},
+    { name: "cat2"}
   ]),
   updateProject,
 )
