@@ -3,7 +3,7 @@ import pool from "../config/database.js"
 export const getAllSubCategories = async (req, res, next) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM sub_category ORDER BY sub_category_name ASC"
+      "SELECT * FROM sub_category ORDER BY created_at ASC"
     )
 
     res.json({
