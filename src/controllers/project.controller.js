@@ -402,6 +402,7 @@ export const getProjectBySlug = async (req, res, next) => {
       WITH ranked_projects AS (
         SELECT p.id, p.slug, p.title, p.category_id, p.cover, p.layout, 
                p.location_date, p.architect, p.type, p.size, p.status, p."desc",
+              p.cat1, p.cat2,
                p.images1, p.images2, p.images3, p.images4, p.images5,
                p.images6, p.images7, p.images8, p.images9, p.images10,
                p.created_at, p.updated_at, c.category_name,
@@ -412,6 +413,7 @@ export const getProjectBySlug = async (req, res, next) => {
       SELECT 
         rp.id, rp.slug, rp.title, rp.category_id, rp.category_name, rp.cover, rp.layout,
         rp.location_date, rp.architect, rp.type, rp.size, rp.status, rp."desc",
+        rp.cat1, rp.cat2,
         rp.images1, rp.images2, rp.images3, rp.images4, rp.images5,
         rp.images6, rp.images7, rp.images8, rp.images9, rp.images10,
         rp.created_at, rp.updated_at,
@@ -438,7 +440,7 @@ export const getProjectBySlug = async (req, res, next) => {
 
 export const createProject = async (req, res, next) => {
   try {
-    const { category_id, title, layout, location_date, architect, type, size, status, desc, sub_category_ids } = req.body
+    const { category_id, title, layout, location_date, architect, type, size, status, desc, sub_category_ids, cat1, cat2 } = req.body
 
     if (!title || !location_date) {
       return res.status(400).json({ error: "Title and location_date are required" })
@@ -477,12 +479,12 @@ export const createProject = async (req, res, next) => {
     const result = await pool.query(
       `INSERT INTO projects (
         id, category_id, cover, slug, title, layout, location_date, 
-        architect, type, size, status, "desc", 
+        architect, type, size, status, "desc", cat1, cat2,
         images1, images2, images3, images4, images5,
         images6, images7, images8, images9, images10
       ) VALUES (
         gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
-        $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+        $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
       ) RETURNING *`,
       [
         category_id,
@@ -496,6 +498,8 @@ export const createProject = async (req, res, next) => {
         size,
         status,
         desc,
+        cat1 || null,
+        cat2 || null,
         images.images1,
         images.images2,
         images.images3,
@@ -544,7 +548,7 @@ export const createProject = async (req, res, next) => {
 export const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { category_id, title, layout, location_date, architect, type, size, status, desc } = req.body
+    const { category_id, title, layout, location_date, architect, type, size, status, desc, cat1, cat2 } = req.body
 
     // Get existing project
     const existingProject = await pool.query("SELECT * FROM projects WHERE id = $1", [id])
@@ -604,6 +608,8 @@ export const updateProject = async (req, res, next) => {
         size = COALESCE($9, size),
         status = COALESCE($10, status),
         "desc" = COALESCE($11, "desc"),
+        cat1 = COALESCE($12, cat1),
+        cat2 = COALESCE($13, cat2),
         images1 = COALESCE($12, images1),
         images2 = COALESCE($13, images2),
         images3 = COALESCE($14, images3),
@@ -628,6 +634,8 @@ export const updateProject = async (req, res, next) => {
         size,
         status,
         desc,
+        cat1 || null,
+        cat2 || null,
         images.images1,
         images.images2,
         images.images3,
