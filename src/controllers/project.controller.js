@@ -402,7 +402,7 @@ export const getProjectBySlug = async (req, res, next) => {
       WITH ranked_projects AS (
         SELECT p.id, p.slug, p.title, p.category_id, p.cover, p.layout, 
                p.location_date, p.architect, p.type, p.size, p.status, p."desc",
-              p.cat1, p.cat2,
+              p."cat1", p."cat2",
                p.images1, p.images2, p.images3, p.images4, p.images5,
                p.images6, p.images7, p.images8, p.images9, p.images10,
                p.created_at, p.updated_at, c.category_name,
@@ -413,7 +413,7 @@ export const getProjectBySlug = async (req, res, next) => {
       SELECT 
         rp.id, rp.slug, rp.title, rp.category_id, rp.category_name, rp.cover, rp.layout,
         rp.location_date, rp.architect, rp.type, rp.size, rp.status, rp."desc",
-        rp.cat1, rp.cat2,
+        rp."cat1", rp."cat2",
         rp.images1, rp.images2, rp.images3, rp.images4, rp.images5,
         rp.images6, rp.images7, rp.images8, rp.images9, rp.images10,
         rp.created_at, rp.updated_at,
