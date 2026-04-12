@@ -65,7 +65,7 @@ export const submitForm = async (req, res) => {
       await transporter.sendMail({
         from: process.env.EMAIL_FROM,
         to: process.env.ADMIN_EMAIL,
-        subject: "New Form Submission",
+        subject: `${type} - Form Submission`,
         html: getSubmissionEmailHTML(submissionData),
       })
     } catch (error) {
