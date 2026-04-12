@@ -1,5 +1,11 @@
 import { transporter, getSubmissionEmailHTML, getConfirmationEmailHTML } from "../config/email.js"
-import { getImageKit } from "../config/imagekit.js"
+import ImageKit from "imagekit"
+
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+})
 
 export const submitForm = async (req, res) => {
   try {
@@ -13,7 +19,6 @@ export const submitForm = async (req, res) => {
       }
 
       try {
-        const imagekit = getImageKit()
         const uploadResponse = await imagekit.upload({
           file: req.file.buffer,
           fileName: `submission-${Date.now()}-${req.file.originalname}`,
@@ -21,13 +26,8 @@ export const submitForm = async (req, res) => {
         })
         file_url = uploadResponse.url
       } catch (uploadError) {
-        console.error("[v0] ImageKit upload error:", uploadError.message)
-        // Don't fail the submission if ImageKit is not configured
-        if (uploadError.message.includes("ImageKit environment variables are missing")) {
-          console.warn("[v0] ImageKit not configured, continuing without file upload")
-        } else {
-          return res.status(500).json({ error: "File upload failed" })
-        }
+        console.error("ImageKit upload error:", uploadError)
+        return res.status(500).json({ error: "File upload failed" })
       }
     }
 
@@ -56,7 +56,7 @@ export const submitForm = async (req, res) => {
           html: getConfirmationEmailHTML(name),
         })
       } catch (error) {
-        console.error("[v0] Error sending user confirmation email:", error.message)
+        console.error("Error sending user confirmation email:", error)
       }
     }
 
@@ -69,7 +69,7 @@ export const submitForm = async (req, res) => {
         html: getSubmissionEmailHTML(submissionData),
       })
     } catch (error) {
-      console.error("[v0] Error sending admin email:", error.message)
+      console.error("Error sending admin email:", error)
     }
 
     res.status(200).json({
@@ -77,7 +77,7 @@ export const submitForm = async (req, res) => {
       message: "Form submitted successfully. Emails have been sent.",
     })
   } catch (error) {
-    console.error("[v0] Form submission error:", error)
+    console.error("Form submission error:", error)
     res.status(500).json({ error: "Form submission failed" })
   }
 }
