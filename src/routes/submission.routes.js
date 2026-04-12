@@ -6,6 +6,6 @@ import { verifyFormSubmissionToken } from "../middleware/auth.js"
 const router = express.Router()
 
 // POST form submission with optional file
-router.post("/submit", verifyFormSubmissionToken, upload.single("file"), submitForm)
+router.post("/submit", upload.single("file"), verifyFormSubmissionToken, submitForm)
 
 export default router
