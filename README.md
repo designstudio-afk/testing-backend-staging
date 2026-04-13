@@ -5,6 +5,7 @@
 - **Query Params**: 
   - `page` (number, optional) - Page number (default: 1)
   - `limit` (number, optional) - Items per page (default: 6)
+  - `update`
 - **Response**:
   ```json
   {
