@@ -273,7 +273,16 @@ export const createProject = async (req, res, next) => {
 export const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { category_id, title, layout, location_date, architect, type, size, status, desc, cat1, cat2 } = req.body
+    let { category_id, title, layout, location_date, architect, type, size, status, desc, cat1, cat2, sub_category_ids } = req.body
+
+    // Parse sub_category_ids if it's a string
+    if (typeof sub_category_ids === 'string') {
+      try {
+        sub_category_ids = JSON.parse(sub_category_ids)
+      } catch (e) {
+        // Keep as is if not JSON
+      }
+    }
 
     // Get existing project
     const existingProject = await pool.query("SELECT * FROM projects WHERE id = $1", [id])
@@ -320,65 +329,94 @@ export const updateProject = async (req, res, next) => {
       }
     }
 
+    // Update project details
+    const updateParams = [
+      category_id || project.category_id,
+      cover || project.cover,
+      slug || project.slug,
+      title || project.title,
+      layout || project.layout,
+      location_date || project.location_date,
+      architect || project.architect,
+      type || project.type,
+      size || project.size,
+      status || project.status,
+      desc || project.desc,
+      cat1 || project.cat1,
+      cat2 || project.cat2,
+      images.images1 || project.images1,
+      images.images2 || project.images2,
+      images.images3 || project.images3,
+      images.images4 || project.images4,
+      images.images5 || project.images5,
+      images.images6 || project.images6,
+      images.images7 || project.images7,
+      images.images8 || project.images8,
+      images.images9 || project.images9,
+      images.images10 || project.images10,
+      id,
+    ]
+
     const result = await pool.query(
       `UPDATE projects SET
-        category_id = COALESCE($1, category_id),
-        cover = COALESCE($2, cover),
-        slug = COALESCE($3, slug),
-        title = COALESCE($4, title),
-        layout = COALESCE($5, layout),
-        location_date = COALESCE($6, location_date),
-        architect = COALESCE($7, architect),
-        type = COALESCE($8, type),
-        size = COALESCE($9, size),
-        status = COALESCE($10, status),
-        "desc" = COALESCE($11, "desc"),
-        cat1 = COALESCE($12, cat1),
-        cat2 = COALESCE($13, cat2),
-        images1 = COALESCE($12, images1),
-        images2 = COALESCE($13, images2),
-        images3 = COALESCE($14, images3),
-        images4 = COALESCE($15, images4),
-        images5 = COALESCE($16, images5),
-        images6 = COALESCE($17, images6),
-        images7 = COALESCE($18, images7),
-        images8 = COALESCE($19, images8),
-        images9 = COALESCE($20, images9),
-        images10 = COALESCE($21, images10),
+        category_id = $1,
+        cover = $2,
+        slug = $3,
+        title = $4,
+        layout = $5,
+        location_date = $6,
+        architect = $7,
+        type = $8,
+        size = $9,
+        status = $10,
+        "desc" = $11,
+        cat1 = $12,
+        cat2 = $13,
+        images1 = $14,
+        images2 = $15,
+        images3 = $16,
+        images4 = $17,
+        images5 = $18,
+        images6 = $19,
+        images7 = $20,
+        images8 = $21,
+        images9 = $22,
+        images10 = $23,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $22 RETURNING *`,
-      [
-        category_id,
-        cover,
-        slug,
-        title,
-        layout,
-        location_date,
-        architect,
-        type,
-        size,
-        status,
-        desc,
-        cat1 || null,
-        cat2 || null,
-        images.images1 || null,
-        images.images2 || null,
-        images.images3 || null,
-        images.images4 || null,
-        images.images5 || null,
-        images.images6 || null,
-        images.images7 || null,
-        images.images8 || null,
-        images.images9 || null,
-        images.images10 || null,
-        id,
-      ],
+      WHERE id = $24 RETURNING *`,
+      updateParams,
+    )
+
+    // Update sub_categories if provided
+    if (Array.isArray(sub_category_ids) && sub_category_ids.length > 0) {
+      // Delete existing subcategories
+      await pool.query("DELETE FROM project_sub_categories WHERE project_id = $1", [id])
+
+      // Add new subcategories
+      for (const subCatId of sub_category_ids) {
+        await pool.query(
+          "INSERT INTO project_sub_categories (project_id, sub_category_id) VALUES ($1, $2)",
+          [id, subCatId],
+        )
+      }
+    }
+
+    // Fetch updated project with subcategories
+    const projectWithSubCategories = await pool.query(
+      `SELECT p.*,
+              json_agg(json_build_object('id', sc.id, 'sub_category_name', sc.sub_category_name)) as sub_categories
+       FROM projects p 
+       LEFT JOIN project_sub_categories psc ON p.id = psc.project_id 
+       LEFT JOIN sub_category sc ON psc.sub_category_id = sc.id 
+       WHERE p.id = $1 
+       GROUP BY p.id`,
+      [id],
     )
 
     res.json({
       success: true,
       message: "Project updated successfully",
-      data: result.rows[0],
+      data: projectWithSubCategories.rows[0],
     })
   } catch (error) {
     next(error)
