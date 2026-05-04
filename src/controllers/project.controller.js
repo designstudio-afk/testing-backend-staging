@@ -2,6 +2,46 @@ import pool from "../config/database.js"
 import { uploadImage } from "../utils/imageUpload.js"
 import { generateSlug } from "../utils/slugify.js"
 
+// export const getAllProjects = async (req, res, next) => {
+//   try {
+//     const page = Math.max(1, Number.parseInt(req.query.page) || 1)
+//     const limit = Number.parseInt(req.query.limit) || 6
+//     const offset = (page - 1) * limit
+
+//     // Get total count
+//     const countResult = await pool.query("SELECT COUNT(*) FROM projects")
+//     const total = Number.parseInt(countResult.rows[0].count)
+//     const totalPages = Math.ceil(total / limit)
+
+//     // Get paginated results
+//     const result = await pool.query(
+//       `
+//       SELECT p.*, c.category_name 
+//       FROM projects p 
+//       LEFT JOIN category c ON p.category_id = c.id 
+//       ORDER BY p.created_at DESC
+//       LIMIT $1 OFFSET $2
+//     `,
+//       [limit, offset],
+//     )
+
+//     res.json({
+//       success: true,
+//       data: result.rows,
+//       pagination: {
+//         page,
+//         limit,
+//         total,
+//         totalPages,
+//         hasNextPage: page < totalPages,
+//         hasPrevPage: page > 1,
+//       },
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export const getAllProjects = async (req, res, next) => {
   try {
     const page = Math.max(1, Number.parseInt(req.query.page) || 1)
@@ -13,12 +53,21 @@ export const getAllProjects = async (req, res, next) => {
     const total = Number.parseInt(countResult.rows[0].count)
     const totalPages = Math.ceil(total / limit)
 
-    // Get paginated results
+    // Get paginated results with subcategories
     const result = await pool.query(
       `
-      SELECT p.*, c.category_name 
+      SELECT p.*, c.category_name,
+             json_agg(
+               json_build_object(
+                 'id', sc.id,
+                 'sub_category_name', sc.sub_category_name
+               )
+             ) FILTER (WHERE sc.id IS NOT NULL) as sub_categories
       FROM projects p 
-      LEFT JOIN category c ON p.category_id = c.id 
+      LEFT JOIN category c ON p.category_id = c.id
+      LEFT JOIN project_sub_categories psc ON p.id = psc.project_id
+      LEFT JOIN sub_category sc ON psc.sub_category_id = sc.id
+      GROUP BY p.id, c.category_name
       ORDER BY p.created_at DESC
       LIMIT $1 OFFSET $2
     `,
